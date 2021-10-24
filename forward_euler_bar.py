@@ -1,6 +1,7 @@
 """
 Nonlinear method in civil engineering_ hw1
 by CHEN Jiawei, master 2nd year in Mechanical engineering
+Here is the .py for forward euler algorithm
 """
 
 import math
@@ -20,7 +21,7 @@ def formula_Kt(k_bar, u):
 k_bar = 0.8
 df = -0.05
 Fmax = -2
-num_iter = Fmax/df
+num_step = Fmax/df
 Kt = []
 ui = []
 Fi = []
@@ -35,7 +36,7 @@ Fi.append(0);
 """
     start forward euler
 """
-for i in range(1,int(num_iter)+1):
+for i in range(1,int(num_step)+1):
     Kt.append(formula_Kt(k_bar,ui[i-1]))
     du = df / Kt[i]
     ui.append(ui[i-1]+du)
