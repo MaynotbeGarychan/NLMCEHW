@@ -1,5 +1,5 @@
 %%
-% This is the MATLAB Code for Newton Raphson algorithm by CHEN Jiawei
+% This is the MATLAB Code for Arc-length algorithm by CHEN Jiawei
 %%
 clear
 clc
@@ -15,7 +15,7 @@ fig1=plot(x,y,'b'); hold on
 axis([-2.5 0 -2.5 0.5]);
 xlabel('Displacement');
 ylabel('Force');
-title('Arc lenth method with k_b_a_r = 1.0');
+title(['Arc length method with k_b_a_r =',num2str(k_bar)]);
 
 %% arc length method
 % set param for increment
@@ -32,16 +32,17 @@ Residual_inc = 1;
 deltalL = 0.05;
 beta = 1.0;
 
-while(step<=max_step && abs(Residual_inc)>=tol)
+while(step<=max_step)
     if step==1
         u(step)=0;
         lambda(step)=0;
     else
         u(step) = u(step-1) + delta_u(iter);
         lambda(step) = lambda(step-1) + delta_lambda(iter);
-        Residual_inc = F_ext-F_inter(u(step),k_bar);
+        if F_inter(u(step),k_bar)<-2
+            break;
+        end
     end
-    
     %init iter
     iter=1;
     delta_u=0;

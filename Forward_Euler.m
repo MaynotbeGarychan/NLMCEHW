@@ -6,7 +6,7 @@ clc
 close all
 format longEng
 %% plot the analytical solution
-k_bar = 1.0;
+k_bar = 0.5;
 x=0:-0.01:-2.5;
 y=x + 1.5*x.^2 + 0.5*x.^3 + k_bar * x;
 figure(1)
@@ -14,7 +14,7 @@ fig1 = plot(x,y,'b'); hold on
 axis([-2.5 0 -2.5 0.5]);
 xlabel('Displacement');
 ylabel('Force');
-title('Forward Euler method with k_b_a_r = 1.0');
+%title(['Forward Euler method with k_b_a_r =',num2str(k_bar)]);
 %% set the para for iter
 %
 F_ext=-2;
@@ -22,9 +22,9 @@ F_ini=0;
 u = 0;
 fig1 = plot(x,F_ext*ones(1,length(x)),'b--'); hold on
 %
-delta_f = -0.05;
+delta_f = -0.01;
 num_step=F_ext./delta_f;
-
+title(['total load step=',num2str(num_step)]);
 %
 for step = 1:1:(num_step+1)
     if step==1

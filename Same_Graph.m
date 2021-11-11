@@ -12,77 +12,7 @@ fig1 = plot(x,y,'b'); hold on
 axis([-2.5 0 -2.5 0.5]);
 xlabel('Displacement');
 ylabel('Force');
-title('k_b_a_r = 1.0');
-
-%% plot Foward Euler
-F_ext=-2;
-F_ini=0;
-u = 0;
-fig1 = plot(x,F_ext*ones(1,length(x)),'b--'); hold on
-%
-delta_f = -0.01;
-num_step=F_ext./delta_f;
-
-%
-for step = 1:1:(num_step+1)
-    if step==1
-        u(step)=0;
-        F_ini(step)=0;
-        F_ext(step)=F_ini(step)+delta_f;
-        k = k_stif(u(step),k_bar);
-        delta_u = delta_f./k;
-        u(step+1)=u(step)+delta_u;
-        F_ini(step+1)=F_ini(step)+delta_f;
-    else
-        F_ext(step)=F_ini(step)+delta_f;
-        k = k_stif(u(step),k_bar);
-        delta_u = delta_f./k;
-        u(step+1)=u(step)+delta_u;
-        F_ini(step+1)=F_ini(step)+delta_f;
-        plot(u(step+1),F_ini(step+1),'ro','Markersize',5,'Markerfacecolor','r'); hold on
-    end
-end
-fig2 = plot(u,F_ini,'ro','Markersize',5,'Markerfacecolor','r'); hold on
-
-%% plot newton raphson
-% set param for increment
-F_ext=-2;
-F_ini=0;
-fig1 = plot(x,F_ext*ones(1,length(x)),'b--'); hold on
-%
-delta_f = -0.05;
-num_step = F_ext/-0.02;
-tol=1e-6;
-max_iter = 100;
-% init increment
-for step = 1:1:(num_step+1)
-    if step==1
-        u(step)=0;
-        F_ini(step)=0;
-        F_ext(step)=F_ini(step)+delta_f;
-    else
-        u(step)=u(step-1)+delta_u;
-        F_ini(step)=F_ini_j;
-        F_ext(step)=F_ini(step)+delta_f;
-    end
-    %init iter
-    iter=1;
-    delta_u = 0;
-    Residual = delta_f;
-    k = k_stif(u(step),k_bar);
-    %k = 2;
-    while(iter<max_iter && abs(Residual)>=tol)
-        ddelta_u=Residual/k;
-        delta_u = delta_u + ddelta_u;
-        F_ini_j=F_inter(u(step)+delta_u,k_bar);
-        Residual = F_ext(step) - F_ini_j;
-        iter = iter +1;
-    end
-    fig3 = plot(u(step),F_ini(step),'go','Markersize',5,'Markerfacecolor','g'); hold on
-    u(step+1) = u(step)+delta_u;
-    
-    
-end
+title(['k_b_a_r = ',num2str(k_bar)]);
 
 %% arc length method
 % set param for increment
@@ -99,14 +29,16 @@ Residual_inc = 1;
 deltalL = 0.05;
 beta = 1.0;
 
-while(step<=max_step && abs(Residual_inc)>=tol)
+while(step<=max_step)
     if step==1
         u(step)=0;
         lambda(step)=0;
     else
         u(step) = u(step-1) + delta_u(iter);
         lambda(step) = lambda(step-1) + delta_lambda(iter);
-        Residual_inc = F_ext-F_inter(u(step),k_bar);
+        if F_inter(u(step),k_bar)<-2
+            break;
+        end
     end
     
     %init iter
@@ -165,11 +97,85 @@ while(step<=max_step && abs(Residual_inc)>=tol)
     end
     step = step+1;
         
-    %legend([fig1 fig2 fig4],'Analytical solution','Arc length point','Arc length prediction','location','best');
-    legend([fig1 fig4],'Analytical solution','Arc length prediction','location','best');
     
 end
 
+%% plot newton raphson
+% set param for increment
+F_ext=-2;
+F_ext_ref = -2;
+F_ini=0;
+fig1 = plot(x,F_ext*ones(1,length(x)),'b--'); hold on
+
+delta_f = -0.05;
+num_step = F_ext/-0.02;
+tol=1e-6;
+max_iter = 100;
+% init increment
+for step = 1:1:(num_step+1)
+    if step==1
+        u(step)=0;
+        F_ini(step)=0;
+        F_ext(step)=F_ini(step)+delta_f;
+    else
+        u(step)=u(step-1)+delta_u;
+        F_ini(step)=F_ini_j;
+        F_ext(step)=F_ini(step)+delta_f;
+    end
+    % add a convergence for the increment step
+    if F_ext(step)<F_ext_ref
+        break;
+    end
+    %init iter
+    iter=1;
+    delta_u = 0;
+    Residual = delta_f;
+    k = k_stif(u(step),k_bar);
+    %k = 2;
+    while(iter<max_iter && abs(Residual)>=tol)
+        ddelta_u=Residual/k;
+        delta_u = delta_u + ddelta_u;
+        F_ini_j=F_inter(u(step)+delta_u,k_bar);
+        Residual = F_ext(step) - F_ini_j;
+        iter = iter +1;
+    end
+    fig3 = plot(u(step),F_ini(step),'go','Markersize',5,'Markerfacecolor','g'); hold on
+    u(step+1) = u(step)+delta_u;
+    
+    
+end
+
+%% plot Foward Euler
+F_ext=-2;
+F_ini=0;
+u = 0;
+fig1 = plot(x,F_ext*ones(1,length(x)),'b--'); hold on
+%
+delta_f = -0.01;
+num_step=F_ext./delta_f;
+
+%
+for step = 1:1:(num_step+1)
+    if step==1
+        u(step)=0;
+        F_ini(step)=0;
+        F_ext(step)=F_ini(step)+delta_f;
+        k = k_stif(u(step),k_bar);
+        delta_u = delta_f./k;
+        u(step+1)=u(step)+delta_u;
+        F_ini(step+1)=F_ini(step)+delta_f;
+    else
+        F_ext(step)=F_ini(step)+delta_f;
+        k = k_stif(u(step),k_bar);
+        delta_u = delta_f./k;
+        u(step+1)=u(step)+delta_u;
+        F_ini(step+1)=F_ini(step)+delta_f;
+        plot(u(step+1),F_ini(step+1),'ro','Markersize',5,'Markerfacecolor','r'); hold on
+    end
+end
+fig2 = plot(u,F_ini,'ro','Markersize',5,'Markerfacecolor','r'); hold on
+
+%%
 
 legend([fig1 fig2 fig3 fig4],'Analytical solution','Forward euler alogorithm','Newton Raphson','Arc Length','location','best');
 

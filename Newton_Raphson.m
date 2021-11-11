@@ -15,13 +15,14 @@ fig1 = plot(x,y,'b'); hold on
 axis([-2.5 0 -2.5 0.5]);
 xlabel('Displacement');
 ylabel('Force');
-title('Newton Raphson method with k_b_a_r = 1.0');
+title(['Newton Raphson method with k_b_a_r =',num2str(k_bar)]);
 %% Increment
 % set param for increment
 F_ext=-2;
+F_ext_ref = -2;
 F_ini=0;
 fig1 = plot(x,F_ext*ones(1,length(x)),'b--'); hold on
-%
+
 delta_f = -0.05;
 num_step = F_ext/-0.02;
 tol=1e-6;
@@ -37,12 +38,16 @@ for step = 1:1:(num_step+1)
         F_ini(step)=F_ini_j;
         F_ext(step)=F_ini(step)+delta_f;
     end
+    % add a convergence for the increment step
+    if F_ext(step)<F_ext_ref
+        break;
+    end
     %init iter
     iter=1;
     delta_u = 0;
     Residual = delta_f;
     k = k_stif(u(step),k_bar);
-    %k = 2;
+    %enter the iter loop
     while(iter<max_iter && abs(Residual)>=tol)
         ddelta_u=Residual/k;
         delta_u = delta_u + ddelta_u;
@@ -51,12 +56,12 @@ for step = 1:1:(num_step+1)
         iter = iter +1;
     end
     fig3 = plot(u(step),F_ini(step),'go','Markersize',5,'Markerfacecolor','g'); hold on
+    % give the displacement to the next time step
     u(step+1) = u(step)+delta_u;
-    
     
 end
 
-
+% plot the legend
 legend([fig1 fig3],'Analytical solution','Newton Raphson alogorithm','location','best');
 
 %%
